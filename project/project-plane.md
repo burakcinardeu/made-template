@@ -20,9 +20,12 @@ The transportation sector is a major conributer to CO2 emission in Europe. In or
 
 ### Datasource1: sector emissions
 * Metadata URL: https://www.kaggle.com/code/rajatraj0502/co2-emissions-by-sectors/input
-* Data URL: https://www.kaggle.com/datasets/meruvulikith/90000-cars-data-from-1970-to-2024/data
+* Data URL:
 * Data Type: CSV
 ### Datasource2: cars data
+* Metadata URL : https://www.kaggle.com/datasets/meruvulikith/90000-cars-data-from-1970-to-2024/data
+* Data URL :
+* Data type: CSV
 
 Short description of the DataSource.
 
