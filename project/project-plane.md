@@ -18,10 +18,11 @@ The transportation sector is a major conributer to CO2 emission in Europe. In or
 
 <!-- Describe each datasources you plan to use in a section. Use the prefic "DatasourceX" where X is the id of the datasource. -->
 
-### Datasource1: ExampleSource
+### Datasource1: sector emissions
 * Metadata URL: https://www.kaggle.com/code/rajatraj0502/co2-emissions-by-sectors/input
 * Data URL: https://www.kaggle.com/datasets/meruvulikith/90000-cars-data-from-1970-to-2024/data
 * Data Type: CSV
+### Datasource2: cars data
 
 Short description of the DataSource.
 
