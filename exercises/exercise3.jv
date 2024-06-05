@@ -1,0 +1,89 @@
+pipeline goods {
+
+    DataExtractor
+    ->AirportsTextFileInterpreter
+    ->LineDelete
+    ->AirportsCSVInterpreter
+    ->WriteHeader
+    ->WriteHeader2
+    
+    ->AirportsTableInterpreter
+    ->JanTransformer
+    ->FebTransformer
+    
+    ->DatabaseLoader;
+
+
+    block DataExtractor oftype HttpExtractor { url: "https://www-genesis.destatis.de/genesis/downloads/00/tables/46131-0014_00.csv"; }
+    block AirportsTextFileInterpreter oftype TextFileInterpreter {encoding : "latin2";}
+    block LineDelete oftype TextLineDeleter {lines: [1, 2,3,4,5,6, 7];}
+    block AirportsCSVInterpreter oftype CSVInterpreter { delimiter: ";"; }
+    block WriteHeader oftype CellWriter{at:range A1:E1; write:["year", "month", "goods_id", "goods_name", "goods_source"];}
+    block WriteHeader2 oftype CellWriter{at:range AT1:AU1; write:["abroad", "total"];}
+    block AirportsTableInterpreter oftype TableInterpreter {
+        header: true;
+        columns: [
+        "year" oftype integer,
+        "month" oftype text,
+        "goods_id" oftype IdConstraint,
+        "goods_name" oftype text,
+        "goods_source" oftype text,
+        "abroad" oftype integer,
+        "total" oftype integer,
+        ];
+    }
+
+    valuetype IdConstraint oftype text {
+        constraints :[
+            IdCon,
+        ];
+    }
+    
+
+    constraint IdCon on text:
+        value matches /NST7-([0-9A-Z])/;
+
+    
+    transform Month{
+        from LowerCase oftype text;
+        to BUpperCase oftype text;
+        BUpperCase: LowerCase replace /Januar/ with "JANUAR";
+    }
+    block JanTransformer oftype TableTransformer {
+        inputColumns: ['month'];
+        outputColumn: 'month';
+        use: Month;
+}
+
+
+
+    transform Feb{
+        from LowerCase oftype text;
+        to BUpperCase oftype text;
+        BUpperCase: LowerCase replace /Februar/ with "FEBRUAR";
+    }
+    block FebTransformer oftype TableTransformer {
+        inputColumns: ['month'];
+        outputColumn: 'month';
+        use: Feb;
+    }
+
+    transform Dash{
+        from dash oftype text;
+        to zero oftype text;
+        zero: dash replace /-/ with "0";
+    }
+    block DashTransform oftype TableTransformer {
+        inputColumns: ['total'];
+        outputColumn: 'asd';
+        use: Dash;
+    }
+    /*
+    constraint GeoConstraint on text:
+        value matches /\d{1,3}\.\d{1,}\, \d{1,3}\.\d{1,}/;
+    
+  
+    block DatabaseLoader oftype SQLiteLoader { table: "goods"; file: "./goodsTransportedByTrain.sqlite"; }
+
+    
+}
