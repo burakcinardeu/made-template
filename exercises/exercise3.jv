@@ -14,7 +14,7 @@ pipeline goods {
 
     block DataExtractor oftype HttpExtractor { url: "https://www-genesis.destatis.de/genesis/downloads/00/tables/46131-0014_00.csv"; }
     block AirportsTextFileInterpreter oftype TextFileInterpreter {encoding : "latin2";}
-    block LineDelete oftype TextLineDeleter {lines: [1, 2,3,4,5,6, 7];}
+    block LineDelete oftype TextLineDeleter {lines: [1,2,3,4,5,6,7];}
     block AirportsCSVInterpreter oftype CSVInterpreter { delimiter: ";"; }
     block WriteHeader oftype CellWriter{at:range A1:E1; write:["year", "month", "goods_id", "goods_name", "goods_source"];}
     block WriteHeader2 oftype CellWriter{at:range AT1:AU1; write:["abroad", "total"];}
@@ -30,16 +30,16 @@ pipeline goods {
         "total" oftype integer,
         ];
     }
-
+   
+    constraint IdCon on text:
+        value matches /NST7-([0-9A-Z])/;
+    
+    
     valuetype IdConstraint oftype text {
         constraints :[
             IdCon,
         ];
-    }
-    constraint IdCon on text:
-        value matches /NST7-([0-9A-Z])/;
-
-    
+    }    
     transform Month{
         from LowerCase oftype text;
         to BUpperCase oftype text;
@@ -50,20 +50,18 @@ pipeline goods {
         outputColumn: 'month';
         use: Month;
 }
-
-
-
-    transform Feb{
-        from LowerCase oftype text;
-        to BUpperCase oftype text;
-        BUpperCase: LowerCase replace /Februar/ with "FEBRUAR";
-    }
     block FebTransformer oftype TableTransformer {
         inputColumns: ['month'];
         outputColumn: 'month';
         use: Feb;
     }
 
+    transform Feb{
+        from LowerCase oftype text;
+        to BUpperCase oftype text;
+        BUpperCase: LowerCase replace /Februar/ with "FEBRUAR";
+    }
+    
     transform Dash{
         from dash oftype text;
         to zero oftype text;
