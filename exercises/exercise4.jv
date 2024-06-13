@@ -1,0 +1,71 @@
+pipeline temperatures {
+
+    DataDownloader
+    -> UnzipFile
+    -> CSVInterpreter
+    -> ColumnSelector
+    -> RenameColumns
+    -> TemperatureConverter
+    -> DataValidator
+    -> SQLiteLoader;
+
+    block DataDownloader oftype HttpExtractor {
+        url: "https://www.mowesta.com/data/measure/mowesta-dataset-20221107.zip";
+        target: "data.zip";
+    }
+
+    block UnzipFile oftype FileUnzipper {
+        inputFile: "data.zip";
+        outputFolder: "./unzipped";
+    }
+
+    block CSVInterpreter oftype CSVInterpreter {
+        file: "./unzipped/data.csv";
+        delimiter: ";";
+        encoding: "utf-8";
+    }
+
+    block ColumnSelector oftype TableSelector {
+        columns: ["Geraet", "Hersteller", "Model", "Monat", "Temperatur in °C (DWD)", "Batterietemperatur in °C"];
+    }
+
+    block RenameColumns oftype ColumnRenamer {
+        columns: {
+            "Geraet": "id",
+            "Hersteller": "producer",
+            "Model": "model",
+            "Monat": "month",
+            "Temperatur in °C (DWD)": "temperature",
+            "Batterietemperatur in °C": "battery_temperature"
+        };
+    }
+
+    transform TemperatureToFahrenheit {
+        from celsius oftype float;
+        to fahrenheit oftype float;
+        fahrenheit: (celsius * 9/5) + 32;
+    }
+
+    block TemperatureConverter oftype TableTransformer {
+        inputColumns: ["temperature", "battery_temperature"];
+        outputColumns: ["temperature", "battery_temperature"];
+        use: TemperatureToFahrenheit;
+    }
+
+    constraint IdPositive on int {
+        value > 0;
+    }
+
+    block DataValidator oftype TableValidator {
+        columns: {
+            "id": IdPositive,
+            "temperature": notNull,
+            "battery_temperature": notNull
+        };
+    }
+
+    block SQLiteLoader oftype SQLiteLoader {
+        table: "temperatures";
+        file: "./temperatures.sqlite";
+    }
+}
