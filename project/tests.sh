@@ -18,6 +18,12 @@ class TestPipeline(unittest.TestCase):
         inspector = sql.inspect(engine)
         self.assertIn('temperature', inspector.get_table_names(), "Temperature table does not exist in the database")
 
+     #check the integer values int temperature column
+    def test_temperature_column_integers(self):
+        engine = sql.create_engine('sqlite:///../data/data.sqlite')
+        with engine.connect() as connection:
+            result = connection.execute
+
 if __name__ == '__main__':
     unittest.main()
 
